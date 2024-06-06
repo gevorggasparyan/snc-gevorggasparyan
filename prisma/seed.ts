@@ -1,14 +1,28 @@
 import { PrismaClient } from "@prisma/client";
-import { mockUsers } from "../src/utils/server/mock-users";
-import { Person } from "../src/utils/common/person"; // Adjust this path if necessary
+import { Person } from "@/utils/common/person";
+import { mockUsers } from "@/utils/server/mock-users";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  for (const person in mockUsers) {
-    const user = mockUsers[person as Person];
+  // Create mock companies
+  const companyA = await prisma.company.create({
+    data: {
+      name: "Company A",
+    },
+  });
+
+  const companyB = await prisma.company.create({
+    data: {
+      name: "Company B",
+    },
+  });
+
+  // Create mock users and assign them to companies
+  for (const person of Object.values(Person)) {
+    const user = mockUsers[person];
     if (user) {
-      await prisma.user.create({
+      const createdUser = await prisma.user.create({
         data: {
           backgroundImageUrl: user.backgroundImageUrl,
           profilePictureUrl: user.profilePictureUrl,
@@ -16,17 +30,40 @@ async function main() {
           title: user.title,
           followers: user.followers,
           following: user.following,
+          companies: {
+            connect:
+              person === Person.PersonA
+                ? [{ id: companyA.id }]
+                : [{ id: companyB.id }],
+          },
         },
       });
+
+      // Assign users to both companies for many-to-many relationship
+      if (person === Person.PersonA) {
+        await prisma.userCompanies.create({
+          data: {
+            userId: createdUser.id,
+            companyId: companyB.id,
+          },
+        });
+      } else if (person === Person.PersonB) {
+        await prisma.userCompanies.create({
+          data: {
+            userId: createdUser.id,
+            companyId: companyA.id,
+          },
+        });
+      }
     }
   }
 }
 
 main()
-.catch((e) => {
-  throw e;
-})
-.finally(async () => {
-  await prisma.$disconnect();
-});
-
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
