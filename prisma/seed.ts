@@ -21,40 +21,41 @@ async function main() {
   // Create mock users and assign them to companies
   for (const person of Object.values(Person)) {
     const user = mockUsers[person];
-    if (user) {
-      const createdUser = await prisma.user.create({
+    if (!user) {
+      continue;
+    }
+    const createdUser = await prisma.user.create({
+      data: {
+        backgroundImageUrl: user.backgroundImageUrl,
+        profilePictureUrl: user.profilePictureUrl,
+        name: user.name,
+        title: user.title,
+        followers: user.followers,
+        following: user.following,
+        companies: {
+          connect:
+            person === Person.PersonA
+              ? [{ id: companyA.id }]
+              : [{ id: companyB.id }],
+        },
+      },
+    });
+
+    // Assign users to both companies for many-to-many relationship
+    if (person === Person.PersonA) {
+      await prisma.userCompanies.create({
         data: {
-          backgroundImageUrl: user.backgroundImageUrl,
-          profilePictureUrl: user.profilePictureUrl,
-          name: user.name,
-          title: user.title,
-          followers: user.followers,
-          following: user.following,
-          companies: {
-            connect:
-              person === Person.PersonA
-                ? [{ id: companyA.id }]
-                : [{ id: companyB.id }],
-          },
+          userId: createdUser.id,
+          companyId: companyB.id,
         },
       });
-
-      // Assign users to both companies for many-to-many relationship
-      if (person === Person.PersonA) {
-        await prisma.userCompanies.create({
-          data: {
-            userId: createdUser.id,
-            companyId: companyB.id,
-          },
-        });
-      } else if (person === Person.PersonB) {
-        await prisma.userCompanies.create({
-          data: {
-            userId: createdUser.id,
-            companyId: companyA.id,
-          },
-        });
-      }
+    } else if (person === Person.PersonB) {
+      await prisma.userCompanies.create({
+        data: {
+          userId: createdUser.id,
+          companyId: companyA.id,
+        },
+      });
     }
   }
 }
