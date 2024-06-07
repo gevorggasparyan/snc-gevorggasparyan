@@ -1,9 +1,5 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth";
-import { mockProviders } from "next-auth/client/__tests__/helpers/mocks";
-import credentials = mockProviders.credentials;
-import credentials = mockProviders.credentials;
-import credentials = mockProviders.credentials;
 
 const testValidUser = { username: "test@email.com", password: "password" };
 
