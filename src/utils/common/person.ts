@@ -1,5 +1,3 @@
-import { Company } from "@prisma/client";
-
 export type User = {
   backgroundImageUrl: string;
   profilePictureUrl: string;
