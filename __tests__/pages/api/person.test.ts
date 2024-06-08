@@ -1,11 +1,11 @@
 import { createMocks } from "node-mocks-http";
-import handler from "../pages/api/person";
+import handler from "@/pages/api/person";
 import { getToken } from "next-auth/jwt";
-import { getPersonFromDB } from "../utils/server/db";
+import { getPersonFromDB } from "@/utils/server/db";
 import { NextApiRequest, NextApiResponse } from "next";
 
 jest.mock("next-auth/jwt");
-jest.mock("../utils/server/db");
+jest.mock("@/utils/server/db");
 
 const mockGetToken = getToken as jest.Mock;
 const mockGetPersonFromDB = getPersonFromDB as jest.Mock;
