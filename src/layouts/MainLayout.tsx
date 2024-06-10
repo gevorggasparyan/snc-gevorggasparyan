@@ -1,29 +1,71 @@
-import { FunctionComponent, PropsWithChildren } from "react";
+import {
+  FunctionComponent,
+  PropsWithChildren,
+  useEffect,
+  useState,
+} from "react";
 import { Inter } from "next/font/google";
+import { useQuery } from "@tanstack/react-query";
 import classNames from "classnames";
-import { Button } from "@/components/Button";
-import { Person } from "@/utils/common/person";
+import { PersonsList } from "@/components/PersonsList";
+import { PersonCard } from "@/components/PersonCard";
+import { Time } from "@/components/Time";
+import { useLogPerson } from "@/hooks/useLogPerson";
+import { getPerson } from "@/utils/client/person";
 
 const inter = Inter({ subsets: ["latin"] });
 
-type MainLayoutProps = {};
+type MainLayoutProps = PropsWithChildren & {};
 
-export const MainLayout: FunctionComponent<
-  PropsWithChildren<MainLayoutProps>
-> = () => {
+export const MainLayout: FunctionComponent<MainLayoutProps> = () => {
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+
+  const {
+    data: person,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["person", selectedPerson],
+    queryFn: getPerson,
+    enabled: !!selectedPerson,
+  });
+
+  useLogPerson(person, currentTime);
+
+  useEffect(() => {
+    setCurrentTime(new Date());
+
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <main
       className={classNames(
         inter.className,
-        "h-screen w-screen",
+        "min-h-screen w-full py-8 px-4",
         "flex flex-col justify-center items-center",
       )}
     >
-      <div className={classNames("flex gap-2")}>
-        {Object.values(Person).map((person) => (
-          <Button key={person}>{person}</Button>
-        ))}
-        <button />
+      <Time date={currentTime} />
+
+      <PersonsList
+        selectedPerson={selectedPerson}
+        onPersonChange={setSelectedPerson}
+      />
+
+      <div
+        className={classNames(
+          "mt-4 flex items-start justify-center w-full min-h-[25rem]",
+        )}
+      >
+        <PersonCard person={person} isLoading={isLoading} error={error} />
       </div>
     </main>
   );

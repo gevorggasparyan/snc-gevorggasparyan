@@ -1,12 +1,18 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { Person } from "@/utils/common/person";
 import { getPersonFromDB } from "@/utils/server/db";
+import { getToken } from "next-auth/jwt";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const getPerson: NextApiHandler = async (req, res) => {
+  const token = await getToken({ req });
+  if (!token) {
+    res.status(401).send("Error: Unauthorized");
+    return;
+  }
   const person = req.query.person as Person;
 
   switch (person) {
