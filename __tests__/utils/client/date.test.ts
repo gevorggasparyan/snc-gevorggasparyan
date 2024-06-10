@@ -10,6 +10,6 @@ describe("formatFullDate", () => {
 
     const formatted = formatFullDate(new Date(dateWithoutTimeZone));
 
-    expect(formatted).toBe(`1970-01-01:00:00:00`);
+    expect(formatted).toBe(`01-01-1970 : 00:00:00`);
   });
 });
